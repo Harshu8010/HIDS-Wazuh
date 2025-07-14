@@ -78,35 +78,15 @@ sudo systemctl restart wazuh-manager
 
 ---
 
-### 5. Add Custom Detection Rules
+### 5. Verify Setup
 
-To detect reverse shells, encoded commands, or suspicious logins, create a custom rule file:
-
-```bash
-sudo nano /var/ossec/etc/rules/custom_rules.xml
+Check the status of the manager and agent:
 ```
-
-####  Example Rule – Reverse Shell Detection
-
-```xml
-<group name="reverse_shell,">
-  <rule id="100200" level="12">
-    <if_sid>18107</if_sid>
-    <match>bash -i >& /dev/tcp</match>
-    <description>Reverse Shell Detected via bash</description>
-  </rule>
-</group>
+sudo systemctl status wazuh-manager
 ```
-
-Restart Wazuh Manager:
-
-```bash
-sudo systemctl restart wazuh-manager
 ```
-
----
-
-### 6. Verify Setup
+sudo systemctl status wazuh-agent
+```
 
 - Ensure agents are listed as `active` in Wazuh Dashboard
 - Simulate attacks (e.g., reverse shell or file change)
@@ -115,14 +95,3 @@ sudo systemctl restart wazuh-manager
   - `/var/ossec/logs/alerts/alerts.log`
 
 ---
-
-###  Setup Completed
-
-| Component        | Status       |
-| ---------------- | ------------ |
-| Wazuh Manager    | Installed  |
-| Linux Agent      | Active     |
-| Windows Agent    | Active     |
-| Custom Rules     | Working    |
-| Alert Monitoring | Functional |
-
