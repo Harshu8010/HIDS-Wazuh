@@ -37,9 +37,13 @@ Kali Linux (Attacker) ---> Wazuh Agents (Win) ---> Wazuh Manager + Dashboard (CS
 ## 📦 Project Structure
 
 ├── setup_process.md # Step-by-step installation guide
+
 ├── report.md # Attack simulation, detection, and analysis
+
 ├── custom_rules.xml # Wazuh custom detection rules
+
 ├── screenshots/ # Alert logs and dashboard captures
+
 └── README.md # This file
 
 
