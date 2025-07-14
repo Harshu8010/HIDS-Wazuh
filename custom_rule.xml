@@ -1,0 +1,33 @@
+<group name="reverse_shell,windows,malware">
+  <!-- Detect cmd.exe from reverse shell -->
+  <rule id="100010" level="10">
+    <if_sid>61613</if_sid> <!-- Event ID 4688: New process created -->
+    <field name="win.system.eventID">4688</field>
+    <match>cmd.exe</match>
+    <description>Reverse Shell Detected: Suspicious cmd.exe execution (possible Meterpreter payload)</description>
+  </rule>
+
+  <!-- Detect powershell.exe execution -->
+  <rule id="100011" level="12">
+    <if_sid>61613</if_sid>
+    <field name="win.system.eventID">4688</field>
+    <match>powershell.exe</match>
+    <description>Reverse Shell Detected: PowerShell process launched (potential encoded payload)</description>
+  </rule>
+
+  <!-- Detect mshta.exe (used in fileless attacks) -->
+  <rule id="100012" level="12">
+    <if_sid>61613</if_sid>
+    <field name="win.system.eventID">4688</field>
+    <match>mshta.exe</match>
+    <description>Suspicious Execution: mshta.exe used in potential reverse shell delivery</description>
+  </rule>
+
+  <!-- Detect rundll32.exe (living-off-the-land binary) -->
+  <rule id="100013" level="13">
+    <if_sid>61613</if_sid>
+    <field name="win.system.eventID">4688</field>
+    <match>rundll32.exe</match>
+    <description>Possible Reverse Shell: rundll32.exe execution detected</description>
+  </rule>
+</group>
