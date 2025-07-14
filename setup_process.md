@@ -38,6 +38,8 @@ sudo bash wazuh-install.sh -a
    - Provide a unique **agent name** (e.g., `win-agent`)
    - Accept default ports and enable firewall exception if prompted
 
+![agent](Screenshots/wazuh_agent_manager.png)
+
 3. Start the service:  Open Powershell 
  ```
  Net Start wazuh
@@ -51,9 +53,11 @@ On the Wazuh Manager:
 ```bash
 sudo /var/ossec/bin/manage_agents
 ```
-image-------
+![manager](Screenshots/wazuh_manager.jpeg)
 
 Use the key output to register the agent on the remote system.
+
+![manager](Screenshots/wazuh_agent.jpeg) 
 
 ---
 
@@ -79,6 +83,14 @@ sudo systemctl restart wazuh-manager
 ---
 
 ### 5. Verify Setup
+
+Go to dasboard and agents are visible their:
+
+![agent](Screenshots/wazuh_agents2.jpeg) 
+
+All the available agents are shown their:
+
+![agent](Screenshots/wazuh_agents3.jpeg)
 
 Check the status of the manager and agent:
 ```
