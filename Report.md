@@ -485,7 +485,7 @@ To address this gap, we implemented a **custom Wazuh rule** that triggers alerts
 
 ![rules](Screenshots/custom_rules.jpeg)
 
-## 11. Conclusion
+## 12. Conclusion
 
 This project provided hands-on experience with deploying and configuring a Host-Based Intrusion Detection System using Wazuh in a virtual lab. Key takeaways include:
 
@@ -517,7 +517,7 @@ This HIDS setup closely resembles real-world SOC environments where:
 
 ---
 
-## 12. Future Enhancements
+## 13. Future Enhancements
 
 The following improvements are planned or recommended:
 
@@ -529,7 +529,7 @@ The following improvements are planned or recommended:
 
 ---
 
-## 13. References
+## 14. References
 
 - 📘 [Wazuh Documentation](https://documentation.wazuh.com/current/index.html)
 - 📦 [Wazuh GitHub](https://github.com/wazuh/wazuh)
