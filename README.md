@@ -40,7 +40,7 @@ Kali Linux (Attacker) ---> Wazuh Agents (Win) ---> Wazuh Manager + Dashboard (CS
 
 ├── report.md # Attack simulation, detection, and analysis
 
-├── custom_rules.md # Wazuh custom detection rules
+├── custom_rules.xml # Wazuh custom detection rules
 
 ├── screenshots/ # Alert logs and dashboard captures
 
