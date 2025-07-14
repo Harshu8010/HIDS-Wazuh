@@ -30,7 +30,7 @@ Below are the main tools and platforms used in this project:
   Tool/Technology --------> Purpose 
 -------------------------------------
 - **Wazuh Manager** | Centralized monitoring, rule evaluation, and alert generation 
-- **Wazuh Agent**   | Deployed on Linux and Windows endpoints to monitor local activity 
+- **Wazuh Agent**   | Deployed on Windows endpoint to monitor local activity 
 - **Windows Server 2008**    | Wazuh Agent endpoint for simulating Windows-based attacks 
 - **Kali Linux**    | Used as an attacker machine to run tools like Metasploit and nmap 
 - **CSI Linux**     | Host OS for Wazuh Manager && Security Operations  
@@ -78,6 +78,10 @@ To test the effectiveness of the Wazuh setup, the following attacks were simulat
 ```bash
 nmap -sS -T4 -A 192.168.56.101
 ```
+
+![Nmap Scan](Screenshots/nmap_scan.jpeg)
+
+
 ### 2. File Modification (Integrity Check):
 
 **Tool Used:** Manual file tampering 
@@ -92,6 +96,16 @@ echo "unauthorized change" >> /etc/passwd
 **Tool Used:** Metasploit
 
 **Purpose:** Test with a real attack simulation 
+
+### - msfconsole
+
+![msfcosole](Screenshots/msfconsole1.jpeg)
+
+### - reverse_tcp
+
+![reverse_tcp](Screenshots/msfconsole2.jpeg)
+
+---
 
 ## 6. Detection Logoic
 
@@ -128,7 +142,7 @@ Before any rule can be applied, raw logs are decoded.
 - IP: `192.168.0.100`
 - Username: `admin`
 
-> Decoders enable consistent field matching for the rules engine.
+ Decoders enable consistent field matching for the rules engine.
 
 ---
 
@@ -189,11 +203,23 @@ On your Wazuh Manager (Linux), default rule files are stored in:
 ```
 sudo /var/ossec/ruleset/rules/
 ```
--------image
+
+![rules](Screenshots/wazuh_rules.jpeg)
+
+View any of the rules file in detail to view all the predefined rules in that by using ```cat```
+
+![rules](Screenshots/wazuh_rules_details.jpeg)
+
+---
 
 ## 7. Log Analysis After Nmap Scan
 
-image------
+
+![logs](Screenshots/wazuh_logs.jpeg)
+
+- By clicking on any particular log it can be viewed in detail 
+
+![logs](Screenshots/wazuh_log_details2.jpeg)
 
 - Event ID 61102 – Windows System Error Event
 
@@ -219,7 +245,7 @@ This one is very interesting — here’s what happened: Nmap’s -A scan tries 
 
 Integrity monitoring in Wazuh is a critical security feature that tracks unauthorized changes to files, directories, or Windows registry keys on monitored systems.
 
-What It Does: Wazuh watches important files and directories (or registry keys on Windows) and alerts you when something changes.
+What It Does: Wazuh watches important files and directories (or registry keys on Windows) and alerts you when something changes. 
 
 What changes could occur and why it matter:
 - File created/modified	-->  Could be malware dropped or config changed
@@ -232,6 +258,8 @@ It watches for:
 - Changes to registry keys (startup entries, policies, etc.)
 - Modifications in C:\Windows\System32
 - Dropped executables in Downloads or Temp
+
+![integrity](Screenshots/integrity_monitoring.png)
 
 Where to Configure It
 Wazuh config file on the agent: 
@@ -255,7 +283,131 @@ When a change happens, Wazuh sends an alert like:
 }
 ```
 
-## 9. Findings
+## 9. Understanding Logs In Depth
+
+![logs](Screenshots/wazuh_log_details.jpeg)
+
+![logs](Screenshots/wazuh_logs_details3.jpeg)
+
+![logs](Screenshots/wazuh_log_details2.jpeg)
+
+
+###  Summary of the Event
+
+| **Field** | **Description** |
+|-----------|------------------|
+| **Rule** | Wazuh generated an alert for **"Successful Remote Logon Detected"**, likely matched from **Event ID 4624**. It indicates that a remote logon was successfully performed on the system. |
+| **MITRE ATT&CK IDs** | `T1550.002`, `T1078.002`, `T1021.001` — these describe **Pass-the-Hash**, **Valid Accounts**, and **Remote Services (like RDP)** respectively. These mappings help identify the tactics used. |
+| **Description** | Indicates **NTLM authentication** via an **anonymous logon**, possibly an RDP connection or Nmap probing using NTLM fallback. |
+
+---
+
+###  Table Breakdown – Key Fields
+
+---
+
+###  General Fields
+
+| **Field** | **Meaning** |
+|-----------|-------------|
+| `@timestamp` | Time when the event was logged (in UTC). |
+| `agent.id` | Unique ID assigned to the Wazuh agent (your Windows machine) — in this case `003`. |
+| `agent.name` | The hostname of the agent system — here it's `LinWin`. |
+| `agent.ip` | IP address of the system where the Wazuh agent is running (`192.168.56.101`). |
+
+---
+
+###  Authentication Information
+
+| **Field** | **Meaning** |
+|-----------|-------------|
+| `data.win.eventdata.authenticationPackageName` | Authentication protocol used — here it's `NTLM`. |
+| `data.win.eventdata.ImPackageName` | Version of the NTLM protocol (`NTLM V1` used here, which is insecure). |
+| `data.win.eventdata.keyLength` | Encryption key length used in the NTLM authentication — `128` bits. |
+
+---
+
+### Logon Details
+
+| **Field** | **Meaning** |
+|-----------|-------------|
+| `data.win.eventdata.logonType = 3` | Type 3 means **network logon**, typically used for RDP, SMB, etc. |
+| `data.win.eventdata.targetUserName = ANONYMOUS LOGON` | Shows that **no real user account** was used — it’s an anonymous authentication attempt. |
+| `data.win.eventdata.targetDomainName = NT AUTHORITY` | The logon occurred under the **local system context**, not a domain user. |
+| `data.win.eventdata.targetUserSid = S-1-5-7` | SID for "Anonymous Logon" — built-in in Windows. |
+
+---
+
+###  Subject & Logon Info
+
+| **Field** | **Meaning** |
+|-----------|-------------|
+| `subjectLogonId = 0x0` | System process performed the logon; not a logged-in user. |
+| `subjectUserSid = S-1-0-0` | Null SID — another indicator that this was anonymous. |
+| `logonGuid` | Globally unique ID for the logon session (often all zeros in anonymous or failed logons). |
+
+---
+
+###  Network Context
+
+| **Field** | **Meaning** |
+|-----------|-------------|
+| `workstationName = nmap` | The scanning machine's hostname was set as `nmap` (possibly spoofed by attacker or auto set by Nmap). |
+| `ipAddress = 192.168.56.102` | IP of the system attempting to authenticate. |
+| `ipPort = 56216` | Source port of the remote connection attempt. |
+
+---
+
+###  Event Metadata
+
+| **Field** | **Meaning** |
+|-----------|-------------|
+| `data.win.system.eventID = 4624` | Windows Event ID for **"An account was successfully logged on"**. This is standard for any successful login. |
+| `data.win.system.computer = vagrant-2008R2` | The target system (likely your vulnerable **Windows Server 2008 R2** VM). |
+| `data.win.system.channel = Security` | This is a **security log** event. |
+| `data.win.system.eventRecordID = 3182` | Unique log ID number in the **Windows Event Log**. |
+
+---
+
+This event can indicate reconnaissance or an attempted remote access by a threat actor using weak authentication protocols like NTLMv1 and anonymous logons. Properly tuning Wazuh rules and monitoring related events (4625, 4648, etc.) is crucial for detecting lateral movement or credential abuse.
+
+---
+
+###  Interpretation
+
+This log indicates that an **anonymous network login** succeeded on your Windows system via **NTLMv1**, which is outdated and vulnerable. The remote machine identified as `nmap`, suggesting that this was caused by an aggressive scan or exploit attempt.
+
+This type of event may precede:
+- RDP brute-force attacks
+- Pass-the-Hash exploitation
+- Reconnaissance using `nmap -A`
+
+---
+
+###  Recommendations
+
+| Action | Why |
+|--------|-----|
+|  Disable NTLMv1 | It's insecure and deprecated. |
+|  Block Anonymous Logons | Prevent unauthenticated access to services. |
+|  Tune Wazuh Rules | Raise severity for anonymous or null SID logons. |
+|  Use Active Response | Auto-block suspicious IPs via Wazuh on detection. |
+|  Monitor for similar Event IDs | Especially 4625 (failed logons), 4648 (logon using explicit credentials), etc. |
+
+---
+
+###  MITRE ATT&CK Mapping
+
+| Tactic | Technique | ID |
+|--------|-----------|----|
+| Credential Access | Pass-the-Hash | T1550.002 |
+| Initial Access | Remote Services (RDP) | T1021.001 |
+| Persistence / Lateral Movement | Valid Accounts | T1078.002 |
+
+---
+
+
+## 10. Findings
 
 This section summarizes the effectiveness of the Wazuh HIDS setup based on the simulated attacks and detection performance.
 
@@ -279,7 +431,7 @@ This section summarizes the effectiveness of the Wazuh HIDS setup based on the s
 
 ---
 
-## 10. Missed/Not Detected 
+## 11. Missed/Not Detected 
 
 Why Was the Reverse TCP Payload Not Detected by Default Wazuh Rules?
 
@@ -330,6 +482,8 @@ To address this gap, we implemented a **custom Wazuh rule** that triggers alerts
   <description>Suspicious Process: Possible Reverse Shell (PowerShell)</description>
 </rule>
 ```
+
+![rules](Screenshots/custom_rules.jpeg)
 
 ## 11. Conclusion
 
